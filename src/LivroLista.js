@@ -1,73 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { ControleEditora } from './controle/ControleEditora';
-import { ControleLivro } from './controle/ControleLivros';
+import React from 'react';
+import { ControleLivros } from './controle/ControleLivros';
+import './LivroLista.css';
 
-const controleEditora = new ControleEditora();
-const controleLivro = new ControleLivro();
-
-const LinhaLivro = (props) => {
-    const { livro, excluir } = props;
-    const nomeEditora = controleEditora.getNomeEditora(livro.codEditora);
-  
-    return (
-      <tr>
-        <td>{livro.codigo}</td>
-        <td>{livro.titulo}</td>
-        <td>{livro.resumo}</td>
-        <td>{nomeEditora}</td>
-        <td>
-          <button onClick={() => excluir(livro.codigo)}>Excluir</button>
-        </td>
-        <td>
-          <ul>
-            {livro.autores.map((autor, index) => (
-              <li key={index}>{autor}</li>
-            ))}
-          </ul>
-        </td>
-      </tr>
-    );
-  };
-  
-  const LivroLista = () => {
-    const [livros, setLivros] = useState([]);
-    const [carregado, setCarregado] = useState(false);
-  
-    useEffect(() => {
-      if (!carregado) {
-        setLivros(controleLivro.obterLivros());
-        setCarregado(true);
-      }
-    }, [carregado]);
-  
-    const excluir = (codigo) => {
-      controleLivro.excluir(codigo);
-      setCarregado(false);
+class LivroLista extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      livros: []
     };
-  
+  }
+
+  componentDidMount() {
+    const controleLivros = new ControleLivros();
+    const livros = controleLivros.obterTodos();
+    this.setState({ livros });
+  }
+
+  handleExcluir = (codigo) => {
+    const controleLivros = new ControleLivros();
+    controleLivros.excluir(codigo);
+    const livros = controleLivros.obterTodos();
+    this.setState({ livros });
+  };
+
+  render() {
     return (
-      <main>
-        <h1>Lista de Livros</h1>
+      <div className="container">
+        <h1>Catálogo de Livros</h1>
         <table>
           <thead>
             <tr>
-              <th>Código</th>
               <th>Título</th>
               <th>Resumo</th>
               <th>Editora</th>
-              <th>Ações</th>
               <th>Autores</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {livros.map(livro => (
-              <LinhaLivro key={livro.codigo} livro={livro} excluir={excluir} />
+            {this.state.livros.map(livro => (
+              <tr key={livro.codigo}>
+                <td>{livro.titulo}</td>
+                <td>{livro.resumo}</td>
+                <td>{livro.editora}</td>
+                <td>
+                  <ul>
+                    {livro.autores.map(autor => (
+                      <li key={autor}>{autor}</li>
+                    ))}
+                  </ul>
+                </td>
+                <td>
+                  <button onClick={() => this.handleExcluir(livro.codigo)} className="btn-excluir">Excluir</button>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
-      </main>
+      </div>
     );
-  };
-  
-  export default LivroLista;
-  
+  }
+}
+
+export default LivroLista;
